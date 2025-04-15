@@ -64,6 +64,8 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && addgroup spiderfoot \
     && adduser -G spiderfoot -h /home/spiderfoot -s /sbin/nologin \
                -g "SpiderFoot User" -D spiderfoot \
+    && apk add --no-cache git nmap \
+    && apk add --no-cache bind-tools \
     && rm -rf /var/cache/apk/* \
     && rm -rf /lib/apk/db \
     && rm -rf /root/.cache \
@@ -72,11 +74,16 @@ RUN apk --update --no-cache add python3 musl openssl libxslt tinyxml libxml2 jpe
     && mkdir -p $SPIDERFOOT_CACHE || true \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_DATA \
     && chown spiderfoot:spiderfoot $SPIDERFOOT_LOGS \
-    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE
- 
+    && chown spiderfoot:spiderfoot $SPIDERFOOT_CACHE 
+
+RUN git clone https://github.com/aboul3la/Sublist3r.git /opt/Sublist3r
+
 COPY . .
 COPY --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+
+RUN pip install -r /opt/Sublist3r/requirements.txt
+
  
 # Make start script executable
 COPY start-scan.sh /start-scan.sh
