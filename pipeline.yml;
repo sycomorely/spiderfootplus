@@ -1,0 +1,40 @@
+trigger: none
+pr: none
+
+parameters:
+  - name: targetDomain
+    type: string
+    default: 'example.com'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: RunWithParam
+    displayName: 'Run Scanner with Dynamic Domain and Process Results'
+    steps:
+      # Step 1: Run SpiderFoot Scanner in Docker
+      - script: |
+          echo "Target Domain: ${{ parameters.targetDomain }}"
+          docker run --rm -v $(pwd):/spiderfoot spiderfoot-plus ${{ parameters.targetDomain }} > result.json
+        displayName: 'Run Docker with Target Domain'
+
+      # Step 2: Run filter_result.py to filter out the desired data and generate filtered_result.json
+      - script: |
+          echo "Running filter_result.py to filter result.json into filtered_result.json"
+          python filter_result.py
+        displayName: 'Run filter_result.py to Generate filtered_result.json'
+
+      # Step 3: Run DCentre.py to further filter the data and generate filtered_result_success.json
+      - script: |
+          echo "Running DCentre.py to filter result.json into filtered_result_success.json..."
+          python DCentre.py
+        displayName: 'Run DCentre.py to Generate filtered_result_success.json'
+      
+      # Step 4: Publish the scan results as artifact
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(System.DefaultWorkingDirectory)'
+          ArtifactName: 'scan-results'
+          publishLocation: 'Container'
+        displayName: 'Publish scan results as artifact'

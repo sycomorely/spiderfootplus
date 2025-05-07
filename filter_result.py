@@ -173,7 +173,8 @@ wanted_types = [
     "Web Technology",
     "Web Analytics",
     "WiFi Access Point Nearby",
-    "3:174"
+    "3:174",
+    "Lat"
 ]
 
 def extract_blocks_with_types(file_path, wanted_types):
